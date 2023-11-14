@@ -7,8 +7,9 @@ Given a Graph $G$ and a set $S$ of paths in $G$, find a minimum subset of paths 
 
 Working on right now:
 
-* Fixing the basic Dancing links algorithm
 * Hashing to avoid overcounting
+    The initial dfs returns the xor of the values of the edges in the component and then we check if that component is already solved
 * Bounds
+    * Efficiency
+    * Packing
 * Order of processing
-* Automated tests

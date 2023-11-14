@@ -8,8 +8,13 @@ Given a Graph $G$ and a set $S$ of paths in $G$, find a minimum subset of paths 
 Working on right now:
 
 * Hashing to avoid overcounting
-    The initial dfs returns the xor of the values of the edges in the component and then we check if that component is already solved
+    * The initial dfs returns the xor of the values of the edges in the component and then we check if that component is already solved
 * Bounds
     * Efficiency
     * Packing
+    * Sum over Packing
+    * Costly discards/inclusions
+    * Reduction rules
 * Order of processing
+    * Upper and Lower Bound propagation
+    * Test different things

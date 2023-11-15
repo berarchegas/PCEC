@@ -13,7 +13,10 @@ struct Node {
 // Define the ordered subset list class
 class DancingLinks {
     public:
-        DancingLinks(int n, int m, int p);
+
+        DancingLinks();
+        
+        DancingLinks(int n, int m, int p, vector<vector<int>> &ed, vector<pair<int, int>> &endpoint);
 
         void hideEdge(bool t, int p);
 
@@ -27,8 +30,9 @@ class DancingLinks {
 
         void uncoverColumn(int i);
 
-    private:
         vector<vector<Node>> table;
+
+    private:
         vector<int> pos;
         vector<vector<int>> options, tail;
         int items;

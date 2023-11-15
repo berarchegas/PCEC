@@ -18,12 +18,11 @@ struct Node {
 } table[MAXN];
 
 vector<vector<int>> options;
-int tail[MAXN], solution[MAXN], items, idToOption[MAXN];
+int tail[MAXN], items, ans = 1e9;
 
 void hideOption(int p) {
     // hide option p
 
-    cout << "Hide " << idToOption[p] << endl;
 
     int q = p + 1;
     while (q != p) {
@@ -42,7 +41,6 @@ void hideOption(int p) {
 void unhideOption(int p) {
     // unhide option p
 
-    cout << "Unhide " << idToOption[p] << endl;
 
     int q = p - 1;
     while (q != p) {
@@ -61,8 +59,6 @@ void unhideOption(int p) {
 void coverItem(int i) {
     // cover item i
 
-    // cout << "Cover " << i << endl;
-
     int p = table[i].down;
     while (p != i) {
         hideOption(p);
@@ -75,8 +71,6 @@ void coverItem(int i) {
 void uncoverItem(int i) {
     // uncover item i
 
-    // cout << "Uncover " << i << endl;
-
     table[table[i].left].right = i;
     table[table[i].right].left = i;
     int p = table[i].up;
@@ -86,26 +80,10 @@ void uncoverItem(int i) {
     }
 }
 
-<<<<<<< HEAD
-vector<vector<int>> options;
-int tail[MAXN], solution[MAXN], items, ans = 1e9;
-
 void search(int k) {
 
     if (table[0].right == 0) {
         ans = min(ans, k);
-=======
-void search(int k) {
-
-    if (table[0].right == 0) {
-        for (int i = 0; i < k; i++) {
-            int id = idToOption[solution[i]];
-            for (int j = 0; j < (int)options[id].size(); j++) {
-                cout << options[id][j] << " ,"[j == (int)options[id].size() - 1 && i < k - 1];
-            }
-            cout << " \n"[i == k - 1];
-        }
->>>>>>> 9ad3ad8 (Testes)
         return;
     }
     
@@ -119,7 +97,6 @@ void search(int k) {
 	coverItem(col);
 
     for (int aux = table[col].down; aux != col; aux = table[aux].down) {
-        solution[k] = aux;
 
         for (int node = aux + 1; node != aux;) {
             if (table[node].item <= 0) {
@@ -133,7 +110,6 @@ void search(int k) {
 
         search(k + 1);
 
-        aux = solution[k];
         col = table[aux].item;
         for (int node = aux - 1; node != aux;) {
             if (table[node].item <= 0) {

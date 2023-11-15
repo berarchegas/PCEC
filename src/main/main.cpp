@@ -2,34 +2,36 @@
 #include"dancingLinks.h"
 
 using namespace std;
-
+using pii = pair<int, int>;
+using ll = long long;
 const int MAXN = 1e5 + 5;
 const int INF = 1e9;
-using pii = pair<int, int>;
 
+mt19937_64 rng((ll) chrono::steady_clock::now().time_since_epoch().count());
+
+vector<ll> hashes;
+map<ll, int> mp;
 vector<vector<int>> vis, ed;
 vector<pii> endpoint;
 DancingLinks d = DancingLinks();
+ll dummy;
 
 // passa por todos os vertices da componente e devolve a menor aresta
-pii dfs(int node, int dep, stack<int> &reset) {
-    // cout << "dfs " << node << "  ";
+pii dfs(int node, int dep, stack<int> &reset, ll &hashValue) {
     reset.push(node);
     vis[dep][node] = 1;
     pii ans = {INF, 0};
     for (int aux = d.table[1][node].down; aux != node; aux = d.table[1][aux].down) {
         int edge = d.table[1][aux].option;
-        // cout << edge << ' ';
-    }
-    // cout << '\n';
-    for (int aux = d.table[1][node].down; aux != node; aux = d.table[1][aux].down) {
-        int edge = d.table[1][aux].option;
         ans = min(ans, {d.table[0][edge].len, edge});
+        if (node == endpoint[edge].first) {
+            hashValue ^= hashes[edge];
+        }
         if (!vis[dep][endpoint[edge].first]) {
-            ans = min(ans, dfs(endpoint[edge].first, dep, reset));
+            ans = min(ans, dfs(endpoint[edge].first, dep, reset, hashValue));
         }
         if (!vis[dep][endpoint[edge].second]) {
-            ans = min(ans, dfs(endpoint[edge].second, dep, reset));
+            ans = min(ans, dfs(endpoint[edge].second, dep, reset, hashValue));
         }
     }
     return ans;
@@ -47,7 +49,8 @@ int search(int dep, int rep) {
 
     int ans = INF;
     stack<int> reset;
-    int edge = dfs(rep, dep, reset).second;
+    ll hashValue = 0;
+    int edge = dfs(rep, dep, reset, hashValue).second;
 
     // cout << "edge = " << edge << endl;
 
@@ -60,6 +63,10 @@ int search(int dep, int rep) {
     if (d.table[0][edge].down == edge) {
         // cout << "Deu ruim\n";
         return INF;
+    }
+
+    if (mp[hashValue]) {
+        return mp[hashValue];
     }
 
 	d.coverColumn(edge);
@@ -86,11 +93,11 @@ int search(int dep, int rep) {
                 int b = endpoint[d.table[0][node].item].second;
                 if (!vis[dep][a] && tenta < INF) {
                     tenta = min(tenta + search(dep + 1, a), INF);
-                    dfs(a, dep, reset);
+                    dfs(a, dep, reset, dummy);
                 }
                 if (!vis[dep][b] && tenta < INF) {
                     tenta = min(tenta + search(dep + 1, b), INF);
-                    dfs(b, dep, reset);
+                    dfs(b, dep, reset, dummy);
                 }
                 node++;
             }
@@ -117,7 +124,7 @@ int search(int dep, int rep) {
 
 	d.uncoverColumn(edge);
     // cout << "return " << ans << '\n';
-    return ans;
+    return mp[hashValue] = ans;
 }
 
 int main() {
@@ -128,15 +135,36 @@ int main() {
     ed = vector<vector<int>> (n + 1, vector<int> (n + 1));
     vis = vector<vector<int>> (n + 1, vector<int> (n + 1));
     endpoint = vector<pii> (m + 1);
+    hashes = vector<ll> (m + 1);
     int a, b;
     for (int i = 1; i <= m; i++) {
         cin >> a >> b;
         if (a > b) swap(a, b);
         endpoint[i] = {a, b};
         ed[a][b] = ed[b][a] = i;
+        hashes[i] = rng();
     }
 
     d = DancingLinks(n, m, p, ed, endpoint);
+    
+    // if we use some order to process the different components in the middle of search we can do the same thing here
+    // we can also propagate upper and lower bounds here
+    stack<int> reset;
+    vector<int> reps;
+    for (int i = 1; i <= n; i++) {
+        if (!vis[0][i]) {
+            dfs(i, 0, reset, dummy);
+            reps.push_back(i);
+        }
+    }
+    while (!reset.empty()) {
+        vis[0][reset.top()] = 0;
+        reset.pop();
+    }
 
-    cout << search(0, 1) << '\n';
+    int ans = 0;
+    for (int x : reps) {
+        ans += search(0, x);
+    }
+    cout << ans << '\n';
 }

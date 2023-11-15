@@ -3,9 +3,7 @@
 using namespace std;
 
 // Dummy constructor
-DancingLinks::DancingLinks() {
-    
-}
+DancingLinks::DancingLinks() {}
 
 // Constructor for the DancingLinks class
 DancingLinks::DancingLinks(int n, int m, int p, vector<vector<int>> &ed, vector<pair<int, int>> &endpoint) {

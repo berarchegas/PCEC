@@ -7,19 +7,17 @@ Given a Graph $G$ and a set $S$ of paths in $G$, find a minimum subset of paths 
 
 Working on right now:
 
+We implemented the UB propagation with hashing, but it turns out it doesnt work in the trivial way
+
+So the working code is in mainNoHash, I still have to make it more clean, think about the vis vector, implement the other bounds and integrate with the nerfed hashing 
+
 * Preprocessing
     * Gomory-Hu
 * Bounds
-    * Efficiency
+    * Efficiency (Implemented)
     * Packing
     * Sum over Packing
     * Costly discards/inclusions
     * Reduction rules
 * Order of processing
-    * Upper and Lower Bound propagation
-        1. Calculate for every component its Lower Bound
-        2. Sort the components based on some heuristic
-        3. Solve the components in order and substitute its Lower Bound for its actual value
-        4. Lower Bound of the parent is always 1 + sum of LB of children
-        5. We can start the solve of the children with the UB of the maximum value its solution can be for it to be possible to get a better solution
     * Test different things

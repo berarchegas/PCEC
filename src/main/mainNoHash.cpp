@@ -3,14 +3,9 @@
 
 using namespace std;
 using pii = pair<int, int>;
-using ll = long long;
 const int MAXN = 1e5 + 5;
 const int INF = 1e9;
 
-mt19937_64 rng((ll) chrono::steady_clock::now().time_since_epoch().count());
-
-vector<ll> hashes;
-map<ll, int> mp;
 vector<vector<int>> vis, ed;
 vector<pii> endpoint;
 DancingLinks d = DancingLinks();
@@ -33,43 +28,42 @@ pii findEdge(int node, int dep, stack<int> &reset) {
     return ans;
 }
 
-void dfs(int node, int dep, stack<int> &reset, ll &newHash, double &efficiency, ll &newSize) {
+void dfs(int node, int dep, stack<int> &reset, double &efficiency, int &newSize) {
     reset.push(node);
     vis[dep][node] = 1;
     for (int aux = d.table[1][node].down; aux != node; aux = d.table[1][aux].down) {
         int edge = d.table[1][aux].option;
         if (node == endpoint[edge].first) {
-            newHash ^= hashes[edge];
             if (d.table[0][edge].down != edge) {
                 efficiency += 1.0/d.table[0][d.table[0][edge].down].len;
             }
             newSize++;
         }
         if (!vis[dep][endpoint[edge].first]) {
-            dfs(endpoint[edge].first, dep, reset, newHash, efficiency, newSize);
+            dfs(endpoint[edge].first, dep, reset, efficiency, newSize);
         }
         if (!vis[dep][endpoint[edge].second]) {
-            dfs(endpoint[edge].second, dep, reset, newHash, efficiency, newSize);
+            dfs(endpoint[edge].second, dep, reset, efficiency, newSize);
         }
     }
 }
 
-// calcula o hash, LB e size da componente
+// calcula o LB e size da componente
 // no momento soh calcula o efficiency bound
-void processComponent(int node, int dep, stack<int> &reset, ll &newHash, ll &newLB, ll &newSize) {
+void processComponent(int node, int dep, stack<int> &reset, int &newLB, int &newSize) {
     double efficiency = 0;
-    dfs(node, dep, reset, newHash, efficiency, newSize);
+    dfs(node, dep, reset, efficiency, newSize);
     // cout << efficiency << endl;
     newLB = ceil(efficiency);
 }
 
-int search(int dep, int rep, ll hashValue, int UB) {
+int search(int dep, int rep, int UB) {
 
     // cout << "search " << dep << ' ' << rep << ' ' << UB << '\n';
 
     if (UB <= 1) {
-        // cout << "Finish " << rep << '\n';
-        return UB;
+        // cout << "Finish " << dep << ' ' << rep << ' ' << UB << '\n';
+        return INF;
     }
 
     stack<int> reset;
@@ -85,13 +79,13 @@ int search(int dep, int rep, ll hashValue, int UB) {
 
     if (d.table[0][edge].down == edge) {
         // cout << "Deu ruim " << dep << ' ' << rep << ' ' << UB << '\n';
-        return mp[hashValue] = INF;
+        return INF;
     }
 
 	d.coverColumn(edge);
 
     for (int aux = d.table[0][edge].down; aux != edge; aux = d.table[0][aux].down) {
-        // cout << "path = " << table[0][aux].option  << ' ' << dep << '\n';
+        // cout << "new path " << UB << ": ";
         for (int node = aux + 1; node != aux;) {
             if (d.table[0][node].item <= 0) {
                 node = d.table[0][node].up;
@@ -102,7 +96,7 @@ int search(int dep, int rep, ll hashValue, int UB) {
             }
         }
 
-        vector<array<ll, 5>> components;
+        vector<array<int, 3>> components;
         int node = aux;
         do {
             if (d.table[0][node].item <= 0) {
@@ -112,52 +106,39 @@ int search(int dep, int rep, ll hashValue, int UB) {
                 int a = endpoint[d.table[0][node].item].first;
                 int b = endpoint[d.table[0][node].item].second;
                 if (!vis[dep][a]) {
-                    ll newHash = 0, newLB = 0, newSize = 0, goodHash;
-                    processComponent(a, dep, reset, newHash, newLB, newSize);
-                    if (!newHash || mp[newHash]) {
-                        newLB = mp[newHash];
-                        goodHash = 1;
-                    }
-                    else {
-                        goodHash = 0;
-                    }
-                    components.push_back({newHash, newLB, newSize, goodHash, a});
+                    int newLB = 0, newSize = 0;
+                    processComponent(a, dep, reset, newLB, newSize);
+                    if (newSize)
+                        components.push_back({newLB, newSize, a});
                 }
                 if (!vis[dep][b]) {
-                    ll newHash = 0, newLB = 0, newSize = 0, goodHash;
-                    processComponent(b, dep, reset, newHash, newLB, newSize);
-                    if (!newHash || mp[newHash]) {
-                        newLB = mp[newHash];
-                        goodHash = 1;
-                    }
-                    else {
-                        goodHash = 0;
-                    }
-                    components.push_back({newHash, newLB, newSize, goodHash, b});
+                    int newLB = 0, newSize = 0;
+                    processComponent(b, dep, reset, newLB, newSize);
+                    if (newSize)
+                        components.push_back({newLB, newSize, b});
                 }
                 node++;
             }
         } while (node != aux);
 
-        // coloca primeiro os caras ja resolvidos por hash e depois ordena por qtd de arestas
-        sort(components.begin(), components.end(), [&] (array<ll, 5> a, array<ll, 5> b){
-            if (a[3] != b[3]) return a[3] > b[3];
-            return a[2] < b[2];
+        // ordena por tamanho
+        sort(components.begin(), components.end(), [&] (array<int, 3> a, array<int, 3> b){
+            return a[1] < b[1];
         });
 
         int LB = 1;
         for (int i = 0; i < (int)components.size() && LB < UB; i++) {
-            LB = min(LB + components[i][1], (ll)INF);
+            LB = min(LB + components[i][0], UB);
         }
+        // cout << LB << ' ' << (int)components.size() << '\n';
         for (int i = 0; i < (int)components.size() && LB < UB; i++) {
-            if (!components[i][3]) {
-                if (UB == INF) {
-                    LB = min(LB + search(dep + 1, components[i][4], components[i][0], UB), UB);
-                }
-                else {
-                    LB = min(LB + search(dep + 1, components[i][4], components[i][0], UB - LB + components[i][1]) - components[i][1], (ll)UB);
-                }
-            }
+            // if (UB == INF) {
+            //     LB = min(LB + search(dep + 1, components[i][2], UB), UB);
+            // }
+            // else {
+            //     LB = min(LB + search(dep + 1, components[i][2], UB - LB + components[i][0]) - components[i][0], UB);
+            // }
+            LB = min(LB + search(dep + 1, components[i][2], UB - LB + components[i][0]) - components[i][0], UB);
         }
 
         while (!reset.empty()) {
@@ -180,8 +161,8 @@ int search(int dep, int rep, ll hashValue, int UB) {
     }
 
 	d.uncoverColumn(edge);
-    // cout << "return " << UB << '\n';
-    return mp[hashValue] = UB;
+    // cout << "return " << dep << ' ' << rep << ' ' << UB << '\n';
+    return UB;
 }
 
 int main() {
@@ -192,36 +173,26 @@ int main() {
     ed = vector<vector<int>> (n + 1, vector<int> (n + 1));
     vis = vector<vector<int>> (n + 1, vector<int> (n + 1));
     endpoint = vector<pii> (m + 1);
-    hashes = vector<ll> (m + 1);
     int a, b;
     for (int i = 1; i <= m; i++) {
         cin >> a >> b;
         if (a > b) swap(a, b);
         endpoint[i] = {a, b};
         ed[a][b] = ed[b][a] = i;
-        hashes[i] = rng();
     }
 
     d = DancingLinks(n, m, p, ed, endpoint);
-    mp[0] = 0;
     
     // if we use some order to process the different components in the middle of search we can do the same thing here
     // we can also propagate upper and lower bounds here
     int UB = INF;
     stack<int> reset;
-    vector<array<ll, 5>> components;
+    vector<array<int, 3>> components;
     for (int i = 1; i <= n; i++) {
         if (!vis[0][i]) {
-            ll newHash = 0, newLB = 0, newSize = 0, goodHash;
-            processComponent(i, 0, reset, newHash, newLB, newSize);
-            if (!newHash) {
-                newLB = 0;
-                goodHash = 1;
-            }
-            else {
-                goodHash = 0;
-            }
-            components.push_back({newHash, newLB, newSize, goodHash, i});
+            int newLB = 0, newSize = 0;
+            processComponent(i, 0, reset, newLB, newSize);
+            components.push_back({newLB, newSize, i});
         }
     }
     while (!reset.empty()) {
@@ -229,17 +200,16 @@ int main() {
         reset.pop();
     }
 
-    // coloca primeiro os caras ja resolvidos por hash e depois ordena por qtd de arestas
-    sort(components.begin(), components.end(), [&] (array<ll, 5> a, array<ll, 5> b){
-        if (a[3] != b[3]) return a[3] > b[3];
-        return a[2] < b[2];
+    // ordena por tamanho
+    sort(components.begin(), components.end(), [&] (array<int, 3> a, array<int, 3> b){
+        return a[1] < b[1];
     });
 
     int LB = 0;
     for (int i = 0; i < (int)components.size() && LB < INF; i++) {
-        if (!components[i][3]) {
-            cout << search(0, components[i][4], components[i][0], INF) << endl;
-            LB += search(0, components[i][4], components[i][0], INF);
+        if (components[i][1]) {
+            // cout << search(0, components[i][2], INF) << '\n';
+            LB += search(0, components[i][2], INF);
         }
     }
     cout << LB << '\n';

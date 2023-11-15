@@ -1,0 +1,8 @@
+Efficiency: For every edge, we want the sum of 1/x where x is the largest path that contains it (if we order the paths by size at the beginning, this is done easily via dfs)
+Costly Discard:
+
+Can i use just a single vis vector??
+
+Think about how to integrate hashing with UB propagation
+If we do it naively then it doesnt work
+I think what we can do is only record the hashing if we update the initial UB, which means we actually found a solution better than the UB

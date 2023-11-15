@@ -30,6 +30,9 @@ DancingLinks::DancingLinks(int n, int m, int p, vector<vector<int>> &ed, vector<
         sort(option.begin(), option.end());
         options.push_back(option);
     }
+    sort(options.begin(), options.end(), [&] (vector<int> a, vector<int> b) {
+        return a.size() > b.size();
+    });
     qtd = max(qtd, 6 * m);
     table = vector<vector<Node>> (2, vector<Node> (qtd));
 
@@ -58,6 +61,7 @@ DancingLinks::DancingLinks(int n, int m, int p, vector<vector<int>> &ed, vector<
             table[0][tail[0][options[i][j]]].down = at;
             tail[0][options[i][j]] = at;
             table[0][at].option = i;
+            table[0][at].len = (int)options[i].size();
             at++;
         }
     }

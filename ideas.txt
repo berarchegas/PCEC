@@ -1,8 +1,14 @@
 Efficiency: For every edge, we want the sum of 1/x where x is the largest path that contains it (if we order the paths by size at the beginning, this is done easily via dfs)
-Costly Discard:
-
-Can i use just a single vis vector??
+Costly Discard: Can calculate with efficiency and maybe packing so as to force a path to be chosen
+Costly Inclusion: We literally do this when calculating the LBs
+Packing: Find a large enough set of independent edges (I think we can implement this based on whatever sort and afterwards we can think aout how to improve this sorting)
+Sum over packing: Same as Hitting set
+Odds per component: Literally number of nodes with odd degree / 2 per component
+More bounds based on the fact that we are in a graph??
+Model the problem as a max weighted independent set problem
+Try to calculate what is the maximum number of edges we can cover with x paths (probably a very low x)
 
 Think about how to integrate hashing with UB propagation
 If we do it naively then it doesnt work
 I think what we can do is only record the hashing if we update the initial UB, which means we actually found a solution better than the UB
+Or maybe check if UB == INF, and if it still INF it means we actually checked for inviability

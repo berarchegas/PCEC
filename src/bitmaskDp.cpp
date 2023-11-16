@@ -7,6 +7,7 @@ using namespace std;
 using pii = pair<int, int>;
 
 const int X = 25;
+const int INF = 1000000000;
 
 map<pii, int> mp;
 vector<int> masks;
@@ -32,7 +33,7 @@ int main() {
         masks.push_back(msk);
     }
     for (int i = 0; i < (1 << m); i++) {
-        dp[i] = p + 1;
+        dp[i] = INF;
     }
     dp[0] = 0;
     for (int i = 0; i < (1 << m); i++) {

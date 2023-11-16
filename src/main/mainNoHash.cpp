@@ -6,31 +6,32 @@ using pii = pair<int, int>;
 const int MAXN = 1e5 + 5;
 const int INF = 1e9;
 
-vector<vector<int>> vis, ed;
+vector<vector<int>> ed;
+vector<int> vis;
 vector<pii> endpoint;
 DancingLinks d = DancingLinks();
 
 // passa por todos os vertices da componente e devolve a menor aresta
-pii findEdge(int node, int dep, stack<int> &reset) {
+pii findEdge(int node, stack<int> &reset) {
     reset.push(node);
-    vis[dep][node] = 1;
+    vis[node] = 1;
     pii ans = {INF, 0};
     for (int aux = d.table[1][node].down; aux != node; aux = d.table[1][aux].down) {
         int edge = d.table[1][aux].option;
         ans = min(ans, {d.table[0][edge].len, edge});
-        if (!vis[dep][endpoint[edge].first]) {
-            ans = min(ans, findEdge(endpoint[edge].first, dep, reset));
+        if (!vis[endpoint[edge].first]) {
+            ans = min(ans, findEdge(endpoint[edge].first, reset));
         }
-        if (!vis[dep][endpoint[edge].second]) {
-            ans = min(ans, findEdge(endpoint[edge].second, dep, reset));
+        if (!vis[endpoint[edge].second]) {
+            ans = min(ans, findEdge(endpoint[edge].second, reset));
         }
     }
     return ans;
 }
 
-void dfs(int node, int dep, stack<int> &reset, double &efficiency, int &newSize) {
+void dfs(int node, stack<int> &reset, double &efficiency, int &newSize) {
     reset.push(node);
-    vis[dep][node] = 1;
+    vis[node] = 1;
     for (int aux = d.table[1][node].down; aux != node; aux = d.table[1][aux].down) {
         int edge = d.table[1][aux].option;
         if (node == endpoint[edge].first) {
@@ -39,25 +40,25 @@ void dfs(int node, int dep, stack<int> &reset, double &efficiency, int &newSize)
             }
             newSize++;
         }
-        if (!vis[dep][endpoint[edge].first]) {
-            dfs(endpoint[edge].first, dep, reset, efficiency, newSize);
+        if (!vis[endpoint[edge].first]) {
+            dfs(endpoint[edge].first, reset, efficiency, newSize);
         }
-        if (!vis[dep][endpoint[edge].second]) {
-            dfs(endpoint[edge].second, dep, reset, efficiency, newSize);
+        if (!vis[endpoint[edge].second]) {
+            dfs(endpoint[edge].second, reset, efficiency, newSize);
         }
     }
 }
 
 // calcula o LB e size da componente
 // no momento soh calcula o efficiency bound
-void processComponent(int node, int dep, stack<int> &reset, int &newLB, int &newSize) {
+void processComponent(int node, stack<int> &reset, int &newLB, int &newSize) {
     double efficiency = 0;
-    dfs(node, dep, reset, efficiency, newSize);
+    dfs(node, reset, efficiency, newSize);
     // cout << efficiency << endl;
     newLB = ceil(efficiency);
 }
 
-int search(int dep, int rep, int UB) {
+int search(int rep, int UB) {
 
     // cout << "search " << dep << ' ' << rep << ' ' << UB << '\n';
 
@@ -67,13 +68,13 @@ int search(int dep, int rep, int UB) {
     }
 
     stack<int> reset;
-    int edge = findEdge(rep, dep, reset).second;
+    int edge = findEdge(rep, reset).second;
 
     // cout << "edge = " << edge << endl;
 
     while (!reset.empty()) {
         // cout << "reset " << reset.top() << '\n';
-        vis[dep][reset.top()] = 0;
+        vis[reset.top()] = 0;
         reset.pop();
     } 
 
@@ -105,21 +106,27 @@ int search(int dep, int rep, int UB) {
             else {
                 int a = endpoint[d.table[0][node].item].first;
                 int b = endpoint[d.table[0][node].item].second;
-                if (!vis[dep][a]) {
+                if (!vis[a]) {
                     int newLB = 0, newSize = 0;
-                    processComponent(a, dep, reset, newLB, newSize);
+                    processComponent(a, reset, newLB, newSize);
                     if (newSize)
                         components.push_back({newLB, newSize, a});
                 }
-                if (!vis[dep][b]) {
+                if (!vis[b]) {
                     int newLB = 0, newSize = 0;
-                    processComponent(b, dep, reset, newLB, newSize);
+                    processComponent(b, reset, newLB, newSize);
                     if (newSize)
                         components.push_back({newLB, newSize, b});
                 }
                 node++;
             }
         } while (node != aux);
+
+        while (!reset.empty()) {
+            // cout << "reset " << reset.top() << '\n';
+            vis[reset.top()] = 0;
+            reset.pop();
+        }
 
         // ordena por tamanho
         sort(components.begin(), components.end(), [&] (array<int, 3> a, array<int, 3> b){
@@ -138,13 +145,7 @@ int search(int dep, int rep, int UB) {
             // else {
             //     LB = min(LB + search(dep + 1, components[i][2], UB - LB + components[i][0]) - components[i][0], UB);
             // }
-            LB = min(LB + search(dep + 1, components[i][2], UB - LB + components[i][0]) - components[i][0], UB);
-        }
-
-        while (!reset.empty()) {
-            // cout << "reset " << reset.top() << '\n';
-            vis[dep][reset.top()] = 0;
-            reset.pop();
+            LB = min(LB + search(components[i][2], UB - LB + components[i][0]) - components[i][0], UB);
         }
 
         UB = min(UB, LB);
@@ -171,7 +172,7 @@ int main() {
     cin >> n >> m >> p;
 
     ed = vector<vector<int>> (n + 1, vector<int> (n + 1));
-    vis = vector<vector<int>> (n + 1, vector<int> (n + 1));
+    vis = vector<int> (n + 1);
     endpoint = vector<pii> (m + 1);
     int a, b;
     for (int i = 1; i <= m; i++) {
@@ -189,14 +190,14 @@ int main() {
     stack<int> reset;
     vector<array<int, 3>> components;
     for (int i = 1; i <= n; i++) {
-        if (!vis[0][i]) {
+        if (!vis[i]) {
             int newLB = 0, newSize = 0;
-            processComponent(i, 0, reset, newLB, newSize);
+            processComponent(i, reset, newLB, newSize);
             components.push_back({newLB, newSize, i});
         }
     }
     while (!reset.empty()) {
-        vis[0][reset.top()] = 0;
+        vis[reset.top()] = 0;
         reset.pop();
     }
 
@@ -209,7 +210,7 @@ int main() {
     for (int i = 0; i < (int)components.size() && LB < INF; i++) {
         if (components[i][1]) {
             // cout << search(0, components[i][2], INF) << '\n';
-            LB += search(0, components[i][2], INF);
+            LB += search(components[i][2], INF);
         }
     }
     cout << LB << '\n';

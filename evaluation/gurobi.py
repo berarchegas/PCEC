@@ -19,10 +19,6 @@ for i in range(p):
     sz = int(input())
     paths.append(list(map(int, input().split())))
     variables.append(model.addVar(vtype=gp.GRB.BINARY))
-for i in range(m):
-    paths.append(edges[i])
-    variables.append(model.addVar(vtype=gp.GRB.BINARY))
-p += m
 
 model.setObjective(
     gp.quicksum(variables[i] for i in range(p)), sense=gp.GRB.MINIMIZE)

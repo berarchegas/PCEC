@@ -12,3 +12,10 @@ Think about how to integrate hashing with UB propagation
 If we do it naively then it doesnt work
 I think what we can do is only record the hashing if we update the initial UB, which means we actually found a solution better than the UB
 Or maybe check if UB == INF, and if it still INF it means we actually checked for inviability
+
+What makes some instances harder than others? Why the fuck is erdos renyi so freaking hard to solve?????????
+
+Get more types of instances, all3paths seems kind of dumb
+Maybe even only do viable instances (start with a cover and then add random paths)
+
+Try other types of branching

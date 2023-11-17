@@ -19,3 +19,9 @@ Get more types of instances, all3paths seems kind of dumb
 Maybe even only do viable instances (start with a cover and then add random paths)
 
 Try other types of branching
+
+Consertar isso: LB = min(LB + search(components[i][4], INF, components[i][0]), INF);
+
+Something I realized: We must allow paths of size 1 for some instances to be solvable, ex: any tree that has a node with two or more leaf vertices and has a parent
+
+We could make a script to run all tests on gurobi and get the result and the time it took and then compare it with our result and time

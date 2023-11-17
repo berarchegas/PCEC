@@ -2,6 +2,7 @@
 #include"dancingLinks.h"
 
 using namespace std;
+using namespace chrono;
 using pii = pair<int, int>;
 using ll = long long;
 const int MAXN = 1e5 + 5;
@@ -34,10 +35,12 @@ pii findEdge(int node, stack<int> &reset) {
     return ans;
 }
 
-void dfs(int node, stack<int> &reset, ll &newHash, int &newSize, double &efficiency) {
+void dfs(int node, stack<int> &reset, ll &newHash, int &newSize, double &efficiency, int &odd) {
     reset.push(node);
     vis[node] = 1;
+    int qtd = 0;
     for (int aux = d.table[1][node].down; aux != node; aux = d.table[1][aux].down) {
+        qtd++;
         int edge = d.table[1][aux].option;
         if (node == endpoint[edge].first) {
             newHash ^= hashes[edge];
@@ -47,22 +50,23 @@ void dfs(int node, stack<int> &reset, ll &newHash, int &newSize, double &efficie
             newSize++;
         }
         if (!vis[endpoint[edge].first]) {
-            dfs(endpoint[edge].first, reset, newHash, newSize, efficiency);
+            dfs(endpoint[edge].first, reset, newHash, newSize, efficiency, odd);
         }
         if (!vis[endpoint[edge].second]) {
-            dfs(endpoint[edge].second, reset, newHash, newSize, efficiency);
+            dfs(endpoint[edge].second, reset, newHash, newSize, efficiency, odd);
         }
     }
+    odd += (qtd&1);
 }
 
 // calcula o LB e size da componente
 // no momento soh calcula o efficiency bound e o edges bound
 void processComponent(int node, stack<int> &reset, ll &newHash, int &newLB, int &newSize) {
     double efficiency = 0;
-    int edges = 0;
-    dfs(node, reset, newHash, newSize, efficiency);
+    int odd = 0;
+    dfs(node, reset, newHash, newSize, efficiency, odd);
     // cout << efficiency << endl;
-    newLB = max(newSize / 2, (int)ceil(efficiency));
+    newLB = max(odd / 2, (int)ceil(efficiency));
 }
 
 int search(int rep, int UB, ll hashValue) {
@@ -196,6 +200,14 @@ int search(int rep, int UB, ll hashValue) {
     return ans;
 }
 
+struct timer : high_resolution_clock {
+	const time_point start;
+	timer(): start(now()) {}
+	int operator()() {
+		return duration_cast<milliseconds>(now() - start).count();
+	}
+};
+
 int main() {
 
     int n, m, p;
@@ -215,6 +227,8 @@ int main() {
     }
 
     d = DancingLinks(n, m, p, ed, endpoint);
+
+    timer T;
     
     // if we use some order to process the different components in the middle of search we can do the same thing here
     // we can also propagate upper and lower bounds here
@@ -249,8 +263,8 @@ int main() {
     int LB = 0;
     for (int i = 0; i < (int)components.size() && LB < INF; i++) {
         if (!components[i][3]) {
-            LB += search(components[i][4], INF, components[i][0]);
+            LB = min(LB + search(components[i][4], INF, components[i][0]), INF);
         }
     }
-    cout << LB << '\n';
+    cout << LB << ' ' << T() << '\n';
 }

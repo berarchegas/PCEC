@@ -2,13 +2,10 @@ import os
 import subprocess
 
 # Define the main folder containing subfolders with graph files
-main_folder = os.path.join(os.path.dirname(__file__), 'teste', 'graphs')
+main_folder = os.path.join(os.path.dirname(__file__), 'graphs')
 
 # Define the path to your C++ executable
-cpp_executable = os.path.join(os.path.dirname(__file__), 'geradores', 'randomGrowthPaths.exe')
-
-k = input()
-p = input()
+cpp_executable = os.path.join(os.path.dirname(__file__), 'generators', 'graph', 'helper.exe')
 
 # Function to generate paths of size 3 and save them to an output file
 def generate_paths(input_graph_file, output_path, file_name):
@@ -23,13 +20,13 @@ for root, dirs, files in os.walk(main_folder):
 
             # Create the output directory structure
             relative_path = os.path.relpath(root, main_folder)
-            output_directory = os.path.join(os.path.dirname(__file__), 'geromel', relative_path)
+            output_directory = os.path.join(os.path.dirname(__file__), 'lofiBaiano', relative_path)
             # print(output_directory)
 
             if not os.path.exists(output_directory):
                 os.makedirs(output_directory)
 
             # Process the graph file and generate paths
-            generate_paths(input_graph_path, output_directory, file_name[:-4] + f"_{k}_{p}.txt")
+            generate_paths(input_graph_path, output_directory, file_name[:-4] + f"_{500}_{30}.txt")
 
 print("Processing complete.")

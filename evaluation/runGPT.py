@@ -8,7 +8,7 @@ main_folder = os.path.join(os.path.dirname(__file__), 'andreasCisiRamos')
 cpp_executable = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src', 'main', 'main.exe')
 
 # Define the output file
-output_file = os.path.join(os.path.dirname(__file__), 'brunoFreitas', 'output.txt')
+output_file = os.path.join(os.path.dirname(__file__), 'output.txt')
 
 # Function to generate paths of size 3 and append them to the output file
 def generate_paths(input_graph_file):

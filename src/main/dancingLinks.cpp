@@ -10,6 +10,7 @@ DancingLinks::DancingLinks(int n, int m, int p, vector<vector<int>> &ed, vector<
 
     items = m;
     pos = vector<int> (m + 5);
+    conflict = vector<int> (m + 5);
     options = vector<vector<int>> ();
     tail = vector<vector<int>> (2, vector<int> (m + 5));
 
@@ -207,4 +208,44 @@ void DancingLinks::uncoverColumn(int i) {
     }
 
     unhideEdge(1, pos[i]);
+}
+
+void DancingLinks::markEdge(int i) {
+    // mark edge i
+
+    conflict[i]++;
+    int p = table[0][i].down;
+    while (p != i) {
+        int q = p + 1;
+        while (q != p) {
+            if (table[0][q].item <= 0) {
+                q = table[0][q].up;
+            }
+            else {
+                conflict[table[0][q].item]++;
+                q++;
+            }
+        }
+        p = table[0][p].down;
+    }
+}
+
+void DancingLinks::unmarkEdge(int i) {
+    // unmark edge i
+
+    int p = table[0][i].up;
+    while (p != i) {
+        int q = p - 1;
+        while (q != p) {
+            if (table[0][q].item <= 0) {
+                q = table[0][q].down;
+            }
+            else {
+                conflict[table[0][q].item]--;
+                q--;
+            }
+        }
+        p = table[0][p].up;
+    }
+    conflict[i]--;
 }

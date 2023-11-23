@@ -30,7 +30,13 @@ class DancingLinks {
 
         void uncoverColumn(int i);
 
+        void markEdge(int i);
+
+        void unmarkEdge(int i);
+
         vector<vector<Node>> table;
+
+        vector<int> conflict;
 
     private:
         vector<int> pos;

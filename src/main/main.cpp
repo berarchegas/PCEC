@@ -35,7 +35,29 @@ pii findEdge(int node, stack<int> &reset) {
     return ans;
 }
 
-void dfs(int node, stack<int> &reset, ll &newHash, int &newSize, double &efficiency, int &odd) {
+// calculate packing and sum over packing
+// at the moment we are just calculating packing bound with no heuristic
+int packingBounds(vector<int> edges) {
+    
+    // use some heuristic here
+    sort(edges.begin(), edges.end());
+    vector<int> packing;
+
+    for (int i = 0; i < (int)edges.size(); i++) {
+        if (!d.conflict[edges[i]]) {
+            packing.push_back(edges[i]);
+            d.markEdge(edges[i]);
+        }
+    }
+
+    for (int i = (int)packing.size() - 1; i >= 0; i--) {
+        d.unmarkEdge(packing[i]);
+    }
+
+    return (int)packing.size();
+}
+
+void dfs(int node, stack<int> &reset, ll &newHash, int &newSize, double &efficiency, int &odd, vector<int> &edges) {
     reset.push(node);
     vis[node] = 1;
     int qtd = 0;
@@ -43,6 +65,7 @@ void dfs(int node, stack<int> &reset, ll &newHash, int &newSize, double &efficie
         qtd++;
         int edge = d.table[1][aux].option;
         if (node == endpoint[edge].first) {
+            edges.push_back(edge);
             newHash ^= hashes[edge];
             if (d.table[0][edge].down != edge) {
                 efficiency += 1.0/d.table[0][d.table[0][edge].down].len;               
@@ -50,10 +73,10 @@ void dfs(int node, stack<int> &reset, ll &newHash, int &newSize, double &efficie
             newSize++;
         }
         if (!vis[endpoint[edge].first]) {
-            dfs(endpoint[edge].first, reset, newHash, newSize, efficiency, odd);
+            dfs(endpoint[edge].first, reset, newHash, newSize, efficiency, odd, edges);
         }
         if (!vis[endpoint[edge].second]) {
-            dfs(endpoint[edge].second, reset, newHash, newSize, efficiency, odd);
+            dfs(endpoint[edge].second, reset, newHash, newSize, efficiency, odd, edges);
         }
     }
     odd += (qtd&1);
@@ -64,10 +87,9 @@ void dfs(int node, stack<int> &reset, ll &newHash, int &newSize, double &efficie
 void processComponent(int node, stack<int> &reset, ll &newHash, int &newLB, int &newSize) {
     double efficiency = 0;
     int odd = 0;
-    dfs(node, reset, newHash, newSize, efficiency, odd);
-    // cout << efficiency << endl;
-    // Im probably calculating the LB wrong
-    newLB = max(odd / 2, (int)ceil(efficiency));
+    vector<int> edges;
+    dfs(node, reset, newHash, newSize, efficiency, odd, edges);
+    newLB = max({odd / 2, (int)ceil(efficiency), packingBounds(edges)});
 }
 
 int search(int rep, int UB, ll hashValue) {

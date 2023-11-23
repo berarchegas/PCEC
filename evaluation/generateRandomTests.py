@@ -5,9 +5,9 @@ import subprocess
 main_folder = os.path.join(os.path.dirname(__file__), 'lofiBaiano')
 
 # Define the path to your C++ executable
-cpp_executable = os.path.join(os.path.dirname(__file__), 'generators', 'path', 'random.exe')
+cpp_executable = os.path.join(os.path.dirname(__file__), 'generators', 'path', 'random')
 
-# Function to generate paths of size 3 and save them to an output file
+# Function to generate paths and save them to an output file
 def generate_paths(input_graph_file, output_path, file_name):
     output_file = os.path.join(output_path, file_name)
     subprocess.run(f'{cpp_executable} < {input_graph_file} > {output_file}', shell=True)

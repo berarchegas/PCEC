@@ -5,7 +5,7 @@ import subprocess
 main_folder = os.path.join(os.path.dirname(__file__), 'graphs')
 
 # Define the path to your C++ executable
-cpp_executable = os.path.join(os.path.dirname(__file__), 'generators', 'graph', 'helper.exe')
+cpp_executable = os.path.join(os.path.dirname(__file__), 'generators', 'graph', 'helper')
 
 # Function to generate paths of size 3 and save them to an output file
 def generate_paths(input_graph_file, output_path, file_name):

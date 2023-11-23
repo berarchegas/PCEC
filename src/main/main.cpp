@@ -45,7 +45,7 @@ void dfs(int node, stack<int> &reset, ll &newHash, int &newSize, double &efficie
         if (node == endpoint[edge].first) {
             newHash ^= hashes[edge];
             if (d.table[0][edge].down != edge) {
-                efficiency += 1.0/d.table[0][d.table[0][edge].down].len;
+                efficiency += 1.0/d.table[0][d.table[0][edge].down].len;               
             }
             newSize++;
         }
@@ -66,6 +66,7 @@ void processComponent(int node, stack<int> &reset, ll &newHash, int &newLB, int 
     int odd = 0;
     dfs(node, reset, newHash, newSize, efficiency, odd);
     // cout << efficiency << endl;
+    // Im probably calculating the LB wrong
     newLB = max(odd / 2, (int)ceil(efficiency));
 }
 
@@ -169,13 +170,12 @@ int search(int rep, int UB, ll hashValue) {
         for (int i = 0; i < (int)components.size() && LB < ans; i++) {
             if (!components[i][3]) {
                 if (ans == INF) {
-                    LB = min(LB + search(components[i][4], ans, components[i][0]), ans);
+                    LB = min(LB + search(components[i][4], ans, components[i][0]) - components[i][1], (ll)ans);
                 }
                 else {
                     LB = min(LB + search(components[i][4], ans - LB + (int)components[i][1], components[i][0]) - components[i][1], (ll)ans);
                 }
             }
-            // LB = min(LB + search(components[i][2], UB - LB + components[i][0]) - components[i][0], UB);
         }
 
         ans = min(ans, LB);
